@@ -6,6 +6,10 @@ Laravel 13, PHP 8.4, MySQL 8.4 API and administrator dashboard for the Follo Car
 
 The features below are implemented in this backend. Customer and owner workflows are available through the API; administrators also have a browser dashboard. The existing Flutter app needs the HTTP integration described in [Flutter integration](doc/mobile-integration.md) to use them.
 
+
+<img width="1226" height="744" alt="Screenshot from 2026-09-13 02-35-26" src="https://github.com/user-attachments/assets/c550d63d-b1c9-47b0-a47f-4f92b6286e5c" />
+<img width="1226" height="744" alt="Screenshot from 2026-09-13 02-36-39" src="https://github.com/user-attachments/assets/1a224ad8-53dc-431f-998c-07bd68a540e5" />
+
 ### Accounts and access control
 
 - Register a customer account with name, email, and a confirmed password of at least 12 characters.
