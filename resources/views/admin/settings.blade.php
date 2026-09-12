@@ -1,0 +1,7 @@
+@extends('admin.layout')
+@section('title','Configuration')
+@section('content')
+<div class="page-heading"><div><div class="eyebrow">PLATFORM PREFERENCES</div><h1>A workspace that fits.</h1><p class="muted">Tune delivery and location behavior for your community.</p></div></div>
+<form class="panel form-panel" method="post" action="/admin/configuration">@csrf<h2>Notifications & proximity</h2><div class="form-grid"><label>Push delivery<select name="push_enabled"><option value="1" @selected($push)>Enabled</option><option value="0" @selected(!$push)>Paused</option></select><small>Pausing keeps messages in the queue. In-app inboxes remain available.</small></label><label>Location freshness (minutes)<input type="number" min="5" max="120" name="location_max_age_minutes" value="{{ $age }}" required><small>Older coordinates are excluded from nearby alerts and search.</small></label></div><div class="form-footer"><span class="muted">Scheduled every 2 minutes</span><button class="button">Save configuration →</button></div></form>
+<section class="panel form-panel"><h2>Infrastructure</h2><p class="muted">These deployment settings are managed in the server environment.</p><dl><dt>Push provider</dt><dd>{{ config('fudo.push_driver') }}</dd><dt>Cache store</dt><dd>{{ config('cache.default') }}</dd><dt>Database</dt><dd>{{ config('database.default') }}</dd></dl><div class="hint">Redis is optional. Use CACHE_STORE=database initially; switch to redis with REDIS_CLIENT=predis when available. Firebase credentials remain on the server.</div></section>
+@endsection

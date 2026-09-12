@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    image: fudo-koma-be
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+  scheduler:
+    image: fudo-koma-be
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    command: php artisan schedule:work
+    volumes:
+      - .:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    profiles: [workers]
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-follo_cart}
+      MYSQL_USER: ${DB_USERNAME:-follo}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-local-development-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    profiles: [redis]
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+volumes:
+  mysql-data:
+  redis-data:
