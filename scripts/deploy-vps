@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+python3 scripts/init-vps-env.py
+./scripts/vps build app web
+./scripts/vps up -d --wait mysql
+# Single-user testing: brief maintenance downtime keeps scheduler/API writes
+# out of the schema migration. Existing volumes are never removed.
+./scripts/vps stop web scheduler app
+./scripts/vps run --rm --no-deps app php artisan migrate --force
+./scripts/vps up -d --wait app web scheduler
+./scripts/vps ps
+echo 'Ready for private access through your SSH tunnel. See doc/deployment-vps.md.'

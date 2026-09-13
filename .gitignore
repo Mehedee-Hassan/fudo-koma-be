@@ -29,3 +29,7 @@ Thumbs.db
 # Firebase service account secrets
 **/*service-account*.json
 **/firebase-credentials*.json
+
+# Private VPS configuration and backups
+.env.vps
+/backups/

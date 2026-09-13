@@ -1,0 +1,97 @@
+name: follo-vps
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-application: &application
+  image: follo-vps-app:latest
+  build:
+    context: .
+    dockerfile: deploy/vps/Dockerfile
+    target: app
+  env_file: .env.vps
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    CACHE_STORE: database
+    SESSION_DRIVER: database
+    LOG_CHANNEL: stderr
+    LOG_LEVEL: info
+  volumes:
+    - app-storage:/app/storage
+  depends_on:
+    mysql:
+      condition: service_healthy
+  restart: unless-stopped
+  init: true
+  logging: *logging
+
+services:
+  app:
+    <<: *application
+    mem_limit: 512m
+    healthcheck:
+      test: [CMD, php, -r, "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    image: follo-vps-web:latest
+    build:
+      context: .
+      dockerfile: deploy/vps/Dockerfile
+      target: web
+    ports:
+      - "127.0.0.1:${VPS_HTTP_PORT:-8080}:80"
+    volumes:
+      - app-storage:/app/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+    logging: *logging
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  scheduler:
+    <<: *application
+    command: [php, artisan, schedule:work]
+    mem_limit: 256m
+    stop_grace_period: 60s
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:?Run scripts/init-vps-env.py first}
+      MYSQL_USER: ${DB_USERNAME:?Run scripts/init-vps-env.py first}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Run scripts/init-vps-env.py first}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run scripts/init-vps-env.py first}
+    command: ["--innodb-buffer-pool-size=256M", "--max-connections=40"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    mem_limit: 1g
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u "$$MYSQL_USER" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+volumes:
+  mysql-data:
+  app-storage:
