@@ -116,3 +116,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 curl 'http://localhost:8000/api/v1/carts?latitude=35.6812&longitude=139.7671&radius_meters=5000' \
   -H 'Accept: application/json'
 ```
+
+## Current-location timestamp and retention
+
+Cart GPS submissions overwrite the unique cart_locations row for that cart. The response includes recorded_at: the server receipt time of the latest location save. updated_at remains the indexed freshness timestamp. Both refresh even when coordinates are identical; the client cannot set either timestamp. No historical GPS rows or activity announcements are created by location PUTs. Existing id/address/created_at fields remain available.

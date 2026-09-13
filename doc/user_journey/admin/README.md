@@ -1366,3 +1366,7 @@ At each API step, add error branches before the success node as appropriate. The
 ```
 
 The 422 name example applies to calls validating name, such as registration; other paths return errors keyed to their own fields. CLI failures and browser form validation have different output/redirect behavior. Consult the per-endpoint API test documents for each path's actual validation cases.
+
+## Current-location timestamp and retention
+
+Cart GPS submissions overwrite the unique cart_locations row for that cart. The response includes recorded_at: the server receipt time of the latest location save. updated_at remains the indexed freshness timestamp. Both refresh even when coordinates are identical; the client cannot set either timestamp. No historical GPS rows or activity announcements are created by location PUTs. Existing id/address/created_at fields remain available.

@@ -84,3 +84,7 @@ These cases keep the remaining fields valid and expect a 2xx response. For user-
 | address — optional omitted | `omit field` | 2xx |
 | address — nullable value | `null` | 2xx |
 | address — maximum accepted | `string of 255 characters` | 2xx |
+
+## Current-location timestamp and retention
+
+Cart GPS submissions overwrite the unique cart_locations row for that cart. The response includes recorded_at: the server receipt time of the latest location save. updated_at remains the indexed freshness timestamp. Both refresh even when coordinates are identical; the client cannot set either timestamp. No historical GPS rows or activity announcements are created by location PUTs. Existing id/address/created_at fields remain available.

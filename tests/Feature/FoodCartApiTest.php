@@ -199,4 +199,30 @@ class FoodCartApiTest extends TestCase
         $this->patchJson('/api/v1/admin/users/'.$owner->id, ['is_active' => false])->assertOk();
         $this->getJson('/api/v1/carts/'.$cart->id)->assertNotFound();
     }
+
+    public function test_cart_gps_submissions_replace_one_record_and_use_server_time(): void
+    {
+        $owner = $this->owner();
+        $cart = $this->cart($owner);
+        Sanctum::actingAs($owner);
+        $this->travelTo(now()->startOfSecond());
+        $url = '/api/v1/owner/carts/'.$cart->id.'/location';
+        $first = $this->putJson($url, ['latitude' => 35, 'longitude' => 139])->assertCreated();
+        $id = $first->json('id');
+        foreach ([35.1, 35.2, 35.2] as $latitude) {
+            $this->travel(2)->minutes();
+            $this->putJson($url, [
+                'latitude' => $latitude,
+                'longitude' => 139,
+                'recorded_at' => '2099-01-01T00:00:00Z',
+                'updated_at' => '2099-01-01T00:00:00Z',
+            ])->assertOk()->assertJsonPath('id', $id);
+            $location = CartLocation::findOrFail($id);
+            $this->assertTrue($location->recorded_at->equalTo(now()));
+            $this->assertTrue($location->updated_at->equalTo(now()));
+        }
+        $this->assertSame(1, CartLocation::where('cart_id', $cart->id)->count());
+        $this->assertSame(35.2, CartLocation::findOrFail($id)->latitude);
+        $this->assertDatabaseCount('cart_updates', 0);
+    }
 }

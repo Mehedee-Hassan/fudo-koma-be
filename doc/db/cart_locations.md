@@ -15,6 +15,7 @@ One latest GPS position per cart.
 | `address` | `varchar(255)` | Yes | NULL | — |
 | `created_at` | `timestamp` | Yes | NULL | — |
 | `updated_at` | `timestamp` | Yes | NULL | — |
+| `recorded_at` | `timestamp` | Yes | NULL | — |
 
 ## Indexes
 
@@ -47,9 +48,18 @@ CREATE TABLE `cart_locations` (
   `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `recorded_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cart_locations_cart_id_unique` (`cart_id`),
   KEY `cart_locations_updated_at_index` (`updated_at`),
   CONSTRAINT `cart_locations_cart_id_foreign` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
+
+## Current-position retention decision
+
+Keep one row per cart, enforced by UNIQUE(cart_id). Every GPS submission replaces the coordinates in that row; repeated identical submissions refresh the timestamps. No GPS history row or cart activity event is inserted automatically.
+
+`recorded_at` is the server receipt time of the latest location-record save, not a device-supplied GPS capture time. `updated_at` remains the row modification time and the existing indexed freshness field. Both refresh through the location API and Eloquent saves, including dashboard location saves. Direct SQL updates bypass model timestamp behavior.
+
+The added column is nullable for legacy records. The migration backfills it from updated_at, falling back to created_at, without making old positions appear newly recorded. New Eloquent saves populate it automatically. Client-supplied recorded_at/updated_at values are not accepted by the location endpoint.

@@ -243,3 +243,7 @@ Tests use an isolated in-memory SQLite database. MySQL migration and notificatio
 - [Deployment notes](doc/deployment.md)
 
 The Flutter source at `/home/mhr/Documents/follo-cart` was inspected for model compatibility. This repository supplies the backend; the Flutter app still needs an HTTP repository implementation replacing its local/Firestore repositories. Live FCM requires credentials and device testing.
+
+## GPS storage policy
+
+Cart locations keep one current row per cart. GPS submissions overwrite that row and refresh server-controlled `recorded_at` and `updated_at`, including when the cart is stationary. No unlimited GPS history is stored. See [cart location schema](doc/db/cart_locations.md).
