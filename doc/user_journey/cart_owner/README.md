@@ -311,3 +311,1191 @@ curl -i -X POST "$BASE_URL/api/v1/auth/logout" \
 ## Access boundaries
 
 Another owner’s existing cart returns 403 on owner writes. A photo/schedule belonging to a different cart returns 404. Owners cannot change is_featured, moderation_status, another account’s role, or notification recipients. Customer account/preferences/device endpoints also work for owner accounts.
+
+
+## Database usage, diagram flow, and JSON examples
+
+This appendix supplements the unchanged journey above. Step numbers match the original sections. Table links point to the actual MySQL schema. Reads/writes below describe successful application paths; validation or authorization failures can stop processing earlier.
+
+### How to read the JSON
+
+The **request descriptor** is a JSON description of the HTTP request, not a payload to POST verbatim. Send only its `body` as JSON; `path`, `query`, and `headers` belong to the HTTP request. GET and bodyless calls use `body: null` to mean **send no request body**. Uploads use real multipart file bytes, not JSON.
+
+The **response descriptor** shows an HTTP status and an illustrative JSON body excerpt. Additional fields/timestamps may be returned. For 204, `body: null` means an **empty HTTP response**, not a literal JSON `null` response. CLI and browser steps are explicitly labeled and do not imply new JSON endpoints.
+
+Example IDs are shared across journeys: customer 101, owner 201, admin 301, cart 401, weekly schedule 501, one-off schedule 502, device 601, notification 701, report 801, photo 901. Replace them with actual IDs. Examples illustrate a successful instance of each step, not a single replayable database snapshot. In particular, list rows and timestamps depend on when the request runs; owner/admin approval, opening, and following must happen in the order described above.
+
+### Common tables used across steps
+
+| Mechanism | MySQL tables | Behavior |
+|---|---|---|
+| Bearer authentication on protected calls | [users](../../db/users.md), [personal_access_tokens](../../db/personal_access_tokens.md) | Read token hash, expiry, user, and active state; Sanctum can update token last_used_at. The caller's role limits privileged routes. |
+| Request rate limiting with database cache | [cache](../../db/cache.md) | Read/write throttle counters. Redis replaces this usage when configured. |
+| Browser dashboard session | [sessions](../../db/sessions.md), [users](../../db/users.md) | Separate session/CSRF authentication; REST bearer tokens do not sign into dashboard forms. |
+| Scheduler mutual exclusion | [cache](../../db/cache.md), [cache_locks](../../db/cache_locks.md) | Prevent overlapping dispatch. Redis replaces these cache/lock tables when enabled. |
+
+Common authentication/cache tables are additional to each step's domain tables. No API directly receives a SQL connection, table name, or database password.
+
+### Diagram-ready flow
+
+Use the Mermaid source below when generating an image later. Each node matches a journey step. The detailed table and JSON blocks below can be used as image annotations. Optional cleanup, blocking, and alternative login steps are branches to choose, not mandatory actions.
+
+```mermaid
+flowchart TD
+    S1["1. Register an account"]
+    S2["2. Obtain owner access - administrator handoff"]
+    S3["3. Sign in and verify the role"]
+    S4["4. Create the food cart"]
+    S5["5. Review owned carts"]
+    S6["6. Publish the cart position"]
+    S7["7. Add a photo"]
+    S8["8. Publish the weekly schedule"]
+    S9["9. Add a one-off stop (optional)"]
+    S10["10. Wait for cart approval - administrator handoff"]
+    S11["11. Open for service"]
+    S12["12. Announce opening"]
+    S13["13. Move the cart and announce the new stop"]
+    S14["14. Check the public activity feed"]
+    S15["15. Close for the day"]
+    S16["16. Maintain the listing (optional)"]
+    S17["17. Sign out"]
+    S1 -->|"admin promotion required"| S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+    S6 -->|"optional photo"| S7
+    S6 --> S8
+    S7 --> S8
+    S8 -->|"optional dated stop"| S9
+    S8 -->|"admin approval required"| S10
+    S9 --> S10
+    S10 --> S11
+    S11 -->|"customer follows first"| S12
+    S12 -->|"optional move"| S13
+    S12 --> S14
+    S13 --> S14
+    S14 --> S15
+    S15 -->|"optional destructive maintenance"| S16
+    S15 -->|"retain listing"| S17
+    S16 --> S17
+```
+
+### Step 1. Register an account
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [users](../../db/users.md) | Read email uniqueness; insert customer with hashed password. |
+| [user_settings](../../db/user_settings.md) | Insert default preferences. |
+| [personal_access_tokens](../../db/personal_access_tokens.md) | Insert hash and expiry for the returned bearer token. |
+
+**Call 1: `POST /api/v1/auth/register`**
+
+**Flow:** public client → route/authentication → validation and permissions → `users`, `user_settings`, `personal_access_tokens` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/auth/register",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "name": "Kenji Sato",
+    "email": "kenji@example.test",
+    "password": "Journey-Kenji-2026!",
+    "password_confirmation": "Journey-Kenji-2026!"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "user": {
+      "id": 201,
+      "name": "Kenji Sato",
+      "email": "kenji@example.test",
+      "role": "customer",
+      "is_active": true
+    },
+    "token": "<new-account-token>"
+  }
+}
+```
+
+### Step 2. Obtain owner access — administrator handoff
+
+**Role handoff:** The approval request below is made by Mika with an admin token, not by Kenji.
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [users](../../db/users.md) | Read target account and update role/active status. |
+| [personal_access_tokens](../../db/personal_access_tokens.md) | Delete target user’s tokens if disabling. |
+| [carts](../../db/carts.md) | Not updated here; later public reads hide carts when owner is inactive. |
+
+**Call 1: `PATCH /api/v1/admin/users/201`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `users`, `personal_access_tokens`, `carts` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PATCH",
+  "path": "/api/v1/admin/users/201",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": "Bearer <admin-token>"
+  },
+  "query": {},
+  "body": {
+    "role": "owner",
+    "is_active": true
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 201,
+    "name": "Kenji Sato",
+    "email": "kenji@example.test",
+    "role": "owner",
+    "is_active": true
+  }
+}
+```
+
+### Step 3. Sign in and verify the role
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [users](../../db/users.md) | Read account/password hash and active status. Read current account. |
+| [personal_access_tokens](../../db/personal_access_tokens.md) | Insert new token hash and expiry. |
+
+**Call 1: `POST /api/v1/auth/login`**
+
+**Flow:** public client → route/authentication → validation and permissions → `users`, `personal_access_tokens` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/auth/login",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "email": "kenji@example.test",
+    "password": "Journey-Kenji-2026!"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "user": {
+      "id": 201,
+      "name": "Kenji Sato",
+      "email": "kenji@example.test",
+      "role": "owner",
+      "is_active": true
+    },
+    "token": "<new-owner-token>"
+  }
+}
+```
+
+**Call 2: `GET /api/v1/me`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `users` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "GET",
+  "path": "/api/v1/me",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 201,
+    "name": "Kenji Sato",
+    "email": "kenji@example.test",
+    "role": "owner",
+    "is_active": true
+  }
+}
+```
+
+### Step 4. Create the food cart
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Insert cart owned by caller, pending moderation. |
+
+**Call 1: `POST /api/v1/owner/carts`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/owner/carts",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "closed"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 401,
+    "owner_id": 201,
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "closed",
+    "moderation_status": "pending",
+    "is_featured": false
+  }
+}
+```
+
+### Step 5. Review owned carts
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Read only carts owned by caller, regardless of moderation status. |
+| [cart_locations](../../db/cart_locations.md) | Read positions. |
+| [photos](../../db/photos.md) | Read photo references. |
+| [cart_schedules](../../db/cart_schedules.md) | Read schedule entries. |
+
+**Call 1: `GET /api/v1/owner/carts`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_locations`, `photos`, `cart_schedules` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "GET",
+  "path": "/api/v1/owner/carts",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {
+    "page": "1"
+  },
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "data": [
+      {
+        "id": 401,
+        "owner_id": 201,
+        "name": "Tokyo Taco Club",
+        "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+        "cuisine": "Mexican",
+        "status": "closed",
+        "moderation_status": "pending",
+        "is_featured": false,
+        "location": null,
+        "photos": [],
+        "schedules": []
+      }
+    ],
+    "current_page": 1,
+    "per_page": 25,
+    "total": 1,
+    "last_page": 1,
+    "next_page_url": null
+  }
+}
+```
+
+### Step 6. Publish the cart position
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Read ownership. |
+| [cart_locations](../../db/cart_locations.md) | Insert/update coordinates/address and touch timestamp. |
+
+**Call 1: `PUT /api/v1/owner/carts/401/location`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_locations` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PUT",
+  "path": "/api/v1/owner/carts/401/location",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "latitude": 35.6812,
+    "longitude": 139.7671,
+    "address": "Tokyo station, Marunouchi exit"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 411,
+    "cart_id": 401,
+    "latitude": 35.6812,
+    "longitude": 139.7671,
+    "address": "Tokyo station, Marunouchi exit",
+    "updated_at": "2026-09-13T03:00:00.000000Z"
+  }
+}
+```
+
+Creation may return 201 and updating an existing row returns 200. The example status assumes the state described at this step.
+
+### Step 7. Add a photo
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Check ownership. |
+| [photos](../../db/photos.md) | Count existing photos and insert stored file path. |
+
+**Call 1: `POST /api/v1/owner/carts/401/photos`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `photos` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/owner/carts/401/photos",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "multipart/form-data; boundary=<generated-by-client>"
+  },
+  "query": {},
+  "body": null,
+  "multipart": {
+    "photo": {
+      "filename": "cart.png",
+      "content_type": "image/png",
+      "source": "doc/test/fixtures/cart.png"
+    }
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 901,
+    "cart_id": 401,
+    "path": "carts/401/example.png",
+    "url": "http://localhost:8000/storage/carts/401/example.png"
+  }
+}
+```
+
+### Step 8. Publish the weekly schedule
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Check ownership. |
+| [cart_schedules](../../db/cart_schedules.md) | Insert/update by cart, weekday and optional specific_date. |
+
+**Call 1: `PUT /api/v1/owner/carts/401/schedules`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_schedules` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PUT",
+  "path": "/api/v1/owner/carts/401/schedules",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "day_of_week": 1,
+    "opens_at": "11:00",
+    "closes_at": "14:00",
+    "timezone": "Asia/Tokyo",
+    "address": "Tokyo station, Marunouchi exit",
+    "specific_date": null,
+    "is_active": true,
+    "latitude": 35.6812,
+    "longitude": 139.7671
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 501,
+    "cart_id": 401,
+    "day_of_week": 1,
+    "opens_at": "11:00",
+    "closes_at": "14:00",
+    "timezone": "Asia/Tokyo",
+    "specific_date": null,
+    "is_active": true,
+    "address": "Tokyo station, Marunouchi exit",
+    "latitude": 35.6812,
+    "longitude": 139.7671
+  }
+}
+```
+
+Creation may return 201 and updating an existing row returns 200. The example status assumes the state described at this step.
+
+### Step 9. Add a one-off stop (optional)
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Check ownership. |
+| [cart_schedules](../../db/cart_schedules.md) | Insert/update by cart, weekday and optional specific_date. |
+
+**Call 1: `PUT /api/v1/owner/carts/401/schedules`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_schedules` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PUT",
+  "path": "/api/v1/owner/carts/401/schedules",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "day_of_week": 7,
+    "opens_at": "12:00",
+    "closes_at": "17:00",
+    "timezone": "Asia/Tokyo",
+    "address": "Tokyo station plaza",
+    "specific_date": "2026-10-04",
+    "is_active": true,
+    "latitude": 35.6812,
+    "longitude": 139.7671
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 502,
+    "cart_id": 401,
+    "day_of_week": 7,
+    "opens_at": "12:00",
+    "closes_at": "17:00",
+    "timezone": "Asia/Tokyo",
+    "specific_date": "2026-10-04",
+    "is_active": true,
+    "address": "Tokyo station plaza",
+    "latitude": 35.6812,
+    "longitude": 139.7671
+  }
+}
+```
+
+Creation may return 201 and updating an existing row returns 200. The example status assumes the state described at this step.
+
+### Step 10. Wait for cart approval — administrator handoff
+
+**Role handoff:** The approval request below is made by Mika with an admin token, not by Kenji.
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Update moderation_status and/or is_featured. Read listing and verify visibility. |
+| [users](../../db/users.md) | Check owner active status. |
+| [follows](../../db/follows.md) | Visibility scope includes follower-count subquery. |
+| [cart_locations](../../db/cart_locations.md) | Read current position. |
+| [photos](../../db/photos.md) | Read photo references. |
+| [cart_schedules](../../db/cart_schedules.md) | Read schedules. |
+
+**Call 1: `PATCH /api/v1/admin/carts/401`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PATCH",
+  "path": "/api/v1/admin/carts/401",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": "Bearer <admin-token>"
+  },
+  "query": {},
+  "body": {
+    "moderation_status": "approved",
+    "is_featured": false
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 401,
+    "owner_id": 201,
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "open",
+    "moderation_status": "approved",
+    "is_featured": false
+  }
+}
+```
+
+**Call 2: `GET /api/v1/carts/401`**
+
+**Flow:** public client → route/authentication → validation and permissions → `carts`, `users`, `follows`, `cart_locations`, `photos`, `cart_schedules` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "GET",
+  "path": "/api/v1/carts/401",
+  "headers": {
+    "Accept": "application/json"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 401,
+    "owner_id": 201,
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "closed",
+    "moderation_status": "approved",
+    "is_featured": false,
+    "location": {
+      "id": 411,
+      "cart_id": 401,
+      "latitude": 35.6812,
+      "longitude": 139.7671,
+      "address": "Tokyo station, Marunouchi exit",
+      "updated_at": "2026-09-13T03:00:00.000000Z"
+    },
+    "photos": [
+      {
+        "id": 901,
+        "cart_id": 401,
+        "path": "carts/401/example.png",
+        "url": "http://localhost:8000/storage/carts/401/example.png"
+      }
+    ],
+    "schedules": [
+      {
+        "id": 501,
+        "cart_id": 401,
+        "day_of_week": 1,
+        "opens_at": "11:00:00",
+        "closes_at": "14:00:00",
+        "timezone": "Asia/Tokyo",
+        "specific_date": null,
+        "is_active": 1
+      }
+    ]
+  }
+}
+```
+
+### Step 11. Open for service
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Resolve ownership and update editable fields. |
+
+**Call 1: `PATCH /api/v1/owner/carts/401`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PATCH",
+  "path": "/api/v1/owner/carts/401",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "open"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 401,
+    "owner_id": 201,
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "open",
+    "moderation_status": "approved",
+    "is_featured": false
+  }
+}
+```
+
+### Step 12. Announce opening
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Check ownership and approved moderation status. |
+| [cart_updates](../../db/cart_updates.md) | Insert activity; fanout_at remains null for scheduler. |
+
+**Call 1: `POST /api/v1/owner/carts/401/updates`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_updates` → HTTP response.
+
+The HTTP call writes only the activity event after checking the cart. `notifications` and `push_deliveries` are generated later by the scheduler, not synchronously by this call.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/owner/carts/401/updates",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "title": "Lunch is ready",
+    "body": "We are serving fresh tacos at the Marunouchi exit until 14:00.",
+    "type": "opened"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 1001,
+    "cart_id": 401,
+    "title": "Lunch is ready",
+    "body": "We are serving fresh tacos at the Marunouchi exit until 14:00.",
+    "type": "opened",
+    "created_at": "2026-09-13T03:00:00.000000Z",
+    "fanout_at": null
+  }
+}
+```
+
+### Step 13. Move the cart and announce the new stop
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Read ownership. Check ownership and approved moderation status. |
+| [cart_locations](../../db/cart_locations.md) | Insert/update coordinates/address and touch timestamp. |
+| [cart_updates](../../db/cart_updates.md) | Insert activity; fanout_at remains null for scheduler. |
+
+**Call 1: `PUT /api/v1/owner/carts/401/location`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_locations` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PUT",
+  "path": "/api/v1/owner/carts/401/location",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "latitude": 35.682,
+    "longitude": 139.768,
+    "address": "Tokyo station plaza"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 411,
+    "cart_id": 401,
+    "latitude": 35.682,
+    "longitude": 139.768,
+    "address": "Tokyo station plaza",
+    "updated_at": "2026-09-13T03:00:00.000000Z"
+  }
+}
+```
+
+Creation may return 201 and updating an existing row returns 200. The example status assumes the state described at this step.
+
+**Call 2: `POST /api/v1/owner/carts/401/updates`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_updates` → HTTP response.
+
+The HTTP call writes only the activity event after checking the cart. `notifications` and `push_deliveries` are generated later by the scheduler, not synchronously by this call.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/owner/carts/401/updates",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "title": "Find us at the plaza",
+    "body": "We moved to Tokyo station plaza for the afternoon.",
+    "type": "moved"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 1001,
+    "cart_id": 401,
+    "title": "Find us at the plaza",
+    "body": "We moved to Tokyo station plaza for the afternoon.",
+    "type": "moved",
+    "created_at": "2026-09-13T03:00:00.000000Z",
+    "fanout_at": null
+  }
+}
+```
+
+### Step 14. Check the public activity feed
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Verify public visibility. |
+| [users](../../db/users.md) | Check owner active status. |
+| [follows](../../db/follows.md) | Visibility scope includes follower-count subquery. |
+| [cart_locations](../../db/cart_locations.md) | Visibility helper loads the location. |
+| [photos](../../db/photos.md) | Visibility helper loads photos. |
+| [cart_schedules](../../db/cart_schedules.md) | Visibility helper loads schedules. |
+| [cart_updates](../../db/cart_updates.md) | Read this cart’s public activity. |
+
+**Call 1: `GET /api/v1/carts/401/updates`**
+
+**Flow:** public client → route/authentication → validation and permissions → `carts`, `users`, `follows`, `cart_locations`, `photos`, `cart_schedules`, `cart_updates` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "GET",
+  "path": "/api/v1/carts/401/updates",
+  "headers": {
+    "Accept": "application/json"
+  },
+  "query": {
+    "page": "1"
+  },
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "data": [
+      {
+        "id": 1001,
+        "cart_id": 401,
+        "title": "Lunch is ready",
+        "body": "We are serving fresh tacos until 14:00.",
+        "type": "opened",
+        "created_at": "2026-09-13T03:00:00.000000Z"
+      }
+    ],
+    "current_page": 1,
+    "per_page": 25,
+    "total": 1,
+    "last_page": 1,
+    "next_page_url": null
+  }
+}
+```
+
+### Step 15. Close for the day
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Resolve ownership and update editable fields. Check ownership and approved moderation status. |
+| [cart_updates](../../db/cart_updates.md) | Insert activity; fanout_at remains null for scheduler. |
+
+**Call 1: `PATCH /api/v1/owner/carts/401`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "PATCH",
+  "path": "/api/v1/owner/carts/401",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "status": "closed"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": 401,
+    "owner_id": 201,
+    "name": "Tokyo Taco Club",
+    "description": "Fresh tacos and seasonal salsa near Tokyo station.",
+    "cuisine": "Mexican",
+    "status": "closed",
+    "moderation_status": "approved",
+    "is_featured": false
+  }
+}
+```
+
+**Call 2: `POST /api/v1/owner/carts/401/updates`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_updates` → HTTP response.
+
+The HTTP call writes only the activity event after checking the cart. `notifications` and `push_deliveries` are generated later by the scheduler, not synchronously by this call.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/owner/carts/401/updates",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>",
+    "Content-Type": "application/json"
+  },
+  "query": {},
+  "body": {
+    "title": "See you next time",
+    "body": "We are closed for today. Thanks for stopping by!",
+    "type": "closed"
+  }
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 201,
+  "body": {
+    "id": 1001,
+    "cart_id": 401,
+    "title": "See you next time",
+    "body": "We are closed for today. Thanks for stopping by!",
+    "type": "closed",
+    "created_at": "2026-09-13T03:00:00.000000Z",
+    "fanout_at": null
+  }
+}
+```
+
+### Step 16. Maintain the listing (optional)
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [carts](../../db/carts.md) | Check ownership. Read ownership then delete cart. |
+| [cart_schedules](../../db/cart_schedules.md) | Check cart relationship and delete entry. Cascade delete. |
+| [photos](../../db/photos.md) | Check cart relationship and delete path record; application removes file. Read paths for filesystem cleanup; cascade removes rows. |
+| [cart_locations](../../db/cart_locations.md) | Cascade delete. |
+| [cart_updates](../../db/cart_updates.md) | Cascade delete. |
+| [follows](../../db/follows.md) | Cascade delete. |
+| [notifications](../../db/notifications.md) | Cascade delete messages referencing this cart. |
+| [push_deliveries](../../db/push_deliveries.md) | Cascade delete through notifications. |
+
+**Call 1: `DELETE /api/v1/owner/carts/401/schedules/502`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `cart_schedules` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "DELETE",
+  "path": "/api/v1/owner/carts/401/schedules/502",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 204,
+  "body": null
+}
+```
+
+**Call 2: `DELETE /api/v1/owner/carts/401/photos/901`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `photos` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "DELETE",
+  "path": "/api/v1/owner/carts/401/photos/901",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 204,
+  "body": null
+}
+```
+
+**Call 3: `DELETE /api/v1/owner/carts/401`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `carts`, `photos`, `cart_locations`, `cart_schedules`, `cart_updates`, `follows`, `notifications`, `push_deliveries` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "DELETE",
+  "path": "/api/v1/owner/carts/401",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 204,
+  "body": null
+}
+```
+
+### Step 17. Sign out
+
+| Table | Read/write purpose in this step |
+|---|---|
+| [personal_access_tokens](../../db/personal_access_tokens.md) | Delete the current bearer token row. |
+
+**Call 1: `POST /api/v1/auth/logout`**
+
+**Flow:** authenticated caller → route/authentication → validation and permissions → `personal_access_tokens` → HTTP response.
+
+**Request descriptor:**
+
+```json
+{
+  "method": "POST",
+  "path": "/api/v1/auth/logout",
+  "headers": {
+    "Accept": "application/json",
+    "Authorization": "Bearer <owner-token>"
+  },
+  "query": {},
+  "body": null
+}
+```
+
+**Response descriptor (example excerpt):**
+
+```json
+{
+  "status": 204,
+  "body": null
+}
+```
+
+### Failure examples for diagram branches
+
+At each API step, add error branches before the success node as appropriate. These are illustrative response excerpts, not a promise of exact framework message text:
+
+```json
+{"status":401,"body":{"message":"Unauthenticated."}}
+```
+
+```json
+{"status":403,"body":{"message":"This action is unauthorized."}}
+```
+
+```json
+{"status":404,"body":{"message":"Resource not found."}}
+```
+
+```json
+{"status":422,"body":{"message":"The given data was invalid.","errors":{"name":["The name field is required."]}}}
+```
+
+```json
+{"status":429,"body":{"message":"Too Many Attempts."}}
+```
+
+The 422 name example applies to calls validating name, such as registration; other paths return errors keyed to their own fields. CLI failures and browser form validation have different output/redirect behavior. Consult the per-endpoint API test documents for each path's actual validation cases.
