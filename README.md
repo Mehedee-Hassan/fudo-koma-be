@@ -165,6 +165,37 @@ The Docker configuration is for local development. It exposes the app on loopbac
 
 On an existing PHP installation, run `composer install`, configure MySQL with `DB_HOST=127.0.0.1`, then run the equivalent Artisan commands and `php artisan serve`. No Node build is needed for the dashboard.
 
+## Configure the MySQL connection
+
+The dedicated connection file is [config/mysql.php](config/mysql.php), loaded by `config/database.php`. Set your deployment values in the project's `.env` file, which is excluded from Git. Copy `.env.example` only when `.env` does not already exist.
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=follo_cart
+DB_USERNAME=follo
+DB_PASSWORD="your-mysql-password"
+DB_SOCKET=
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+```
+
+Use `DB_HOST=mysql` for the bundled Docker Compose database. If PHP and MySQL run directly on the same machine, use `127.0.0.1`; for a remote database, use its hostname. The hostname must be reachable from the PHP runtime. An optional `MYSQL_ATTR_SSL_CA` value supplies the CA certificate path inside that runtime. If `DB_URL` is set, its connection values can override the individual fields above; unset it when configuring the fields separately.
+
+After editing `.env`, clear cached configuration and check the connection:
+
+```bash
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan migrate:status
+# If the scheduler is running, restart it to load the new settings:
+docker compose restart scheduler
+```
+
+For a fresh database, run `php artisan migrate` through the app container after configuring it. For a production deployment that caches configuration, rebuild it with `php artisan config:cache` and restart long-running application processes. On a direct PHP installation, omit `docker compose exec app`.
+
+Changing these values selects a connection; it does not copy existing data or change MySQL account passwords. The bundled MySQL container uses its database/user/password environment values only when initializing an empty data volume. Update an existing server account separately before changing the application's password.
+
 ## Push and scheduling
 
 The default `PUSH_DRIVER=disabled` creates in-app notifications and pending delivery records without contacting Firebase. For real delivery, place your Firebase service account JSON outside public storage, set `PUSH_DRIVER=fcm`, `FIREBASE_PROJECT_ID`, and `FIREBASE_CREDENTIALS` to its absolute path **inside the container**, and enable the FCM HTTP v1 API. Never commit that file. Register each device with `POST /api/v1/me/devices`.
