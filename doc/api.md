@@ -1,5 +1,7 @@
 # API v1
 
+See [role-based user journeys](user_journey/README.md) for complete customer, owner, and administrator workflows.
+
 See [per-endpoint test cases and full-parameter examples](test/README.md) for runnable requests, sample data, and expected validation results.
 
 Base URL: `/api/v1`. Use `Accept: application/json`. JSON writes use `Content-Type: application/json`; photo uploads use multipart form data. Authenticated endpoints require `Authorization: Bearer <token>`.
