@@ -235,6 +235,7 @@ docker compose exec -T app php artisan schedule:list
 Tests use an isolated in-memory SQLite database. MySQL migration and notification command smoke checks should also run when changing schema or queries.
 
 - [API contract](doc/api.md)
+- [Database table schemas](doc/db/README.md)
 - [Per-endpoint test cases and full-parameter examples](doc/test/README.md)
 - [Flutter integration](doc/mobile-integration.md)
 - [System design and improvements](doc/system-design.md)
