@@ -1,0 +1,3651 @@
+[
+  {
+    "slug": "register",
+    "title": "Register Customer",
+    "method": "POST",
+    "path": "auth/register",
+    "role": "public",
+    "status": 201,
+    "fields": {
+      "name": {
+        "example": "Customer Test",
+        "rules": "required|string|max:100"
+      },
+      "email": {
+        "example": "new-customer@example.test",
+        "rules": "required|email|max:255|unique:users"
+      },
+      "password": {
+        "example": "Test-password-123!",
+        "rules": "required|string|min:12|confirmed"
+      },
+      "password_confirmation": {
+        "example": "Test-password-123!",
+        "rules": "confirmation"
+      }
+    },
+    "query": {},
+    "response": {
+      "user": {
+        "name": "Customer Test",
+        "email": "new-customer@example.test",
+        "role": "customer"
+      },
+      "token": "<generated-token>"
+    },
+    "notes": "Always creates a customer. Supplying role=admin does not grant privileges. A duplicate email returns 422. Password and confirmation must match; passwords are never returned.",
+    "cases": [
+      {
+        "name": "name — missing",
+        "field": "name",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "name — null",
+        "field": "name",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — wrong type",
+        "field": "name",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — above maximum",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — missing",
+        "field": "email",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "email — null",
+        "field": "email",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — wrong type",
+        "field": "email",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — invalid email",
+        "field": "email",
+        "value": "not-an-email",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — above maximum",
+        "field": "email",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — duplicate email",
+        "field": "email",
+        "value": "customer@example.test",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — missing",
+        "field": "password",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "password — null",
+        "field": "password",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — wrong type",
+        "field": "password",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — below minimum",
+        "field": "password",
+        "value": "xxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password_confirmation — mismatch",
+        "field": "password_confirmation",
+        "value": "different-password",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "name": "Customer Test",
+      "email": "new-customer@example.test",
+      "password": "Test-password-123!",
+      "password_confirmation": "Test-password-123!"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "name — maximum accepted",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "password — minimum accepted",
+        "field": "password",
+        "value": "xxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "login",
+    "title": "Log In",
+    "method": "POST",
+    "path": "auth/login",
+    "role": "public",
+    "status": 200,
+    "fields": {
+      "email": {
+        "example": "customer@example.test",
+        "rules": "required|email"
+      },
+      "password": {
+        "example": "Test-password-123!",
+        "rules": "required|string"
+      }
+    },
+    "query": {},
+    "response": {
+      "user": {
+        "id": 101,
+        "role": "customer"
+      },
+      "token": "<generated-token>"
+    },
+    "notes": "Unknown email, wrong password, and disabled account return 422, not 401. A successful token expires after 30 days.",
+    "cases": [
+      {
+        "name": "email — missing",
+        "field": "email",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "email — null",
+        "field": "email",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — wrong type",
+        "field": "email",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "email — invalid email",
+        "field": "email",
+        "value": "not-an-email",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — missing",
+        "field": "password",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "password — null",
+        "field": "password",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — wrong type",
+        "field": "password",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "password — incorrect credentials",
+        "field": "password",
+        "value": "incorrect-password",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "email": "customer@example.test",
+      "password": "Test-password-123!"
+    },
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "logout",
+    "title": "Log Out",
+    "method": "POST",
+    "path": "auth/logout",
+    "role": "customer",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Revokes the current bearer token. Subsequent requests with that token must return 401. Remove the device registration first if signing out on a shared device.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "list-carts",
+    "title": "Browse and Search Carts",
+    "method": "GET",
+    "path": "carts",
+    "role": "public",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "search": {
+        "example": "Tokyo",
+        "rules": "nullable|string|max:100"
+      },
+      "latitude": {
+        "example": 35.6812,
+        "rules": "required_with:longitude|numeric|between:-90,90"
+      },
+      "longitude": {
+        "example": 139.7671,
+        "rules": "required_with:latitude|numeric|between:-180,180"
+      },
+      "radius_meters": {
+        "example": 5000,
+        "rules": "sometimes|integer|min:100|max:50000"
+      },
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Coordinates must be supplied together. Without coordinates this is a catalog search; radius alone does not filter by proximity. With coordinates, results exclude stale/missing locations and sort by distance_meters. Only approved carts with active owners are public. Page is framework pagination, not a validated domain field; use positive integers. Page beyond the last page returns an empty data array.",
+    "cases": [
+      {
+        "name": "search — wrong type",
+        "field": "search",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "search — above maximum",
+        "field": "search",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — missing",
+        "field": "latitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "latitude — null",
+        "field": "latitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — wrong type",
+        "field": "latitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — below minimum",
+        "field": "latitude",
+        "value": -91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — above maximum",
+        "field": "latitude",
+        "value": 91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — missing",
+        "field": "longitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "longitude — null",
+        "field": "longitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — wrong type",
+        "field": "longitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — below minimum",
+        "field": "longitude",
+        "value": -181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — above maximum",
+        "field": "longitude",
+        "value": 181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — null",
+        "field": "radius_meters",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — wrong type",
+        "field": "radius_meters",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — below minimum",
+        "field": "radius_meters",
+        "value": 99,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — above maximum",
+        "field": "radius_meters",
+        "value": 50001,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {},
+    "query_payload": {
+      "search": "Tokyo",
+      "latitude": 35.6812,
+      "longitude": 139.7671,
+      "radius_meters": 5000,
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "search — optional omitted",
+        "field": "search",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "search — nullable value",
+        "field": "search",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "search — maximum accepted",
+        "field": "search",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — minimum accepted",
+        "field": "latitude",
+        "value": -90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — maximum accepted",
+        "field": "latitude",
+        "value": 90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — minimum accepted",
+        "field": "longitude",
+        "value": -180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — maximum accepted",
+        "field": "longitude",
+        "value": 180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — optional omitted",
+        "field": "radius_meters",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — minimum accepted",
+        "field": "radius_meters",
+        "value": 100,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — maximum accepted",
+        "field": "radius_meters",
+        "value": 50000,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "get-cart",
+    "title": "Get Cart Details",
+    "method": "GET",
+    "path": "carts/{cart}",
+    "role": "public",
+    "status": 200,
+    "fields": {},
+    "query": {},
+    "response": {
+      "id": 401,
+      "name": "Tokyo Taco Club",
+      "location": {
+        "latitude": 35.6812,
+        "longitude": 139.7671
+      },
+      "photos": [],
+      "schedules": []
+    },
+    "notes": "Unknown, pending, rejected, or disabled-owner carts return 404. Location can be null.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "cart-updates",
+    "title": "List Cart Updates",
+    "method": "GET",
+    "path": "carts/{cart}/updates",
+    "role": "public",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Cart must be publicly visible; otherwise 404. Returns only this cart’s updates, newest first.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "get-profile",
+    "title": "Get My Profile",
+    "method": "GET",
+    "path": "me",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {},
+    "response": {
+      "id": 101,
+      "name": "Customer Test",
+      "email": "customer@example.test",
+      "role": "customer",
+      "is_active": true
+    },
+    "notes": "The current account is derived from the token. No user_id parameter is accepted. Password, remember token, and bearer token are not returned.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "update-profile",
+    "title": "Update My Profile",
+    "method": "PATCH",
+    "path": "me",
+    "role": "customer",
+    "status": 200,
+    "fields": {
+      "name": {
+        "example": "Customer Updated",
+        "rules": "required|string|max:100"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 101,
+      "name": "Customer Updated"
+    },
+    "notes": "Only name is editable. Email, role, and is_active are ignored on this path.",
+    "cases": [
+      {
+        "name": "name — missing",
+        "field": "name",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "name — null",
+        "field": "name",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — wrong type",
+        "field": "name",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — above maximum",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "name": "Customer Updated"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "name — maximum accepted",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "get-settings",
+    "title": "Get My Notification Settings",
+    "method": "GET",
+    "path": "me/settings",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {},
+    "response": {
+      "user_id": 101,
+      "push_enabled": true,
+      "nearby_enabled": true,
+      "updates_enabled": true,
+      "radius_meters": 5000
+    },
+    "notes": "Creates default settings if missing.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "update-settings",
+    "title": "Update My Notification Settings",
+    "method": "PATCH",
+    "path": "me/settings",
+    "role": "customer",
+    "status": 200,
+    "fields": {
+      "push_enabled": {
+        "example": true,
+        "rules": "sometimes|boolean"
+      },
+      "nearby_enabled": {
+        "example": true,
+        "rules": "sometimes|boolean"
+      },
+      "updates_enabled": {
+        "example": true,
+        "rules": "sometimes|boolean"
+      },
+      "radius_meters": {
+        "example": 5000,
+        "rules": "sometimes|integer|between:100,50000"
+      }
+    },
+    "query": {},
+    "response": {
+      "user_id": 101,
+      "radius_meters": 5000
+    },
+    "notes": "200 when the settings row already exists; 201 if this request creates it. Fields are independently optional; omitted settings keep their values. JSON true/false or 0/1 are accepted; strings \"true\" and \"false\" are not Laravel boolean values.",
+    "cases": [
+      {
+        "name": "push_enabled — null",
+        "field": "push_enabled",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "push_enabled — invalid boolean",
+        "field": "push_enabled",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "nearby_enabled — null",
+        "field": "nearby_enabled",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "nearby_enabled — invalid boolean",
+        "field": "nearby_enabled",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "updates_enabled — null",
+        "field": "updates_enabled",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "updates_enabled — invalid boolean",
+        "field": "updates_enabled",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — null",
+        "field": "radius_meters",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — wrong type",
+        "field": "radius_meters",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — below minimum",
+        "field": "radius_meters",
+        "value": 99.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "radius_meters — above maximum",
+        "field": "radius_meters",
+        "value": 50001.0,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "push_enabled": true,
+      "nearby_enabled": true,
+      "updates_enabled": true,
+      "radius_meters": 5000
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "push_enabled — optional omitted",
+        "field": "push_enabled",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed true",
+        "field": "push_enabled",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed false",
+        "field": "push_enabled",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed 0",
+        "field": "push_enabled",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed 1",
+        "field": "push_enabled",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed \"0\"",
+        "field": "push_enabled",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "push_enabled — allowed \"1\"",
+        "field": "push_enabled",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — optional omitted",
+        "field": "nearby_enabled",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed true",
+        "field": "nearby_enabled",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed false",
+        "field": "nearby_enabled",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed 0",
+        "field": "nearby_enabled",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed 1",
+        "field": "nearby_enabled",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed \"0\"",
+        "field": "nearby_enabled",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "nearby_enabled — allowed \"1\"",
+        "field": "nearby_enabled",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — optional omitted",
+        "field": "updates_enabled",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed true",
+        "field": "updates_enabled",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed false",
+        "field": "updates_enabled",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed 0",
+        "field": "updates_enabled",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed 1",
+        "field": "updates_enabled",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed \"0\"",
+        "field": "updates_enabled",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "updates_enabled — allowed \"1\"",
+        "field": "updates_enabled",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — optional omitted",
+        "field": "radius_meters",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — minimum accepted",
+        "field": "radius_meters",
+        "value": 100,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "radius_meters — maximum accepted",
+        "field": "radius_meters",
+        "value": 50000,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "set-user-location",
+    "title": "Publish My Location",
+    "method": "PUT",
+    "path": "me/location",
+    "role": "customer",
+    "status": 201,
+    "fields": {
+      "latitude": {
+        "example": 35.6812,
+        "rules": "required|numeric|between:-90,90"
+      },
+      "longitude": {
+        "example": 139.7671,
+        "rules": "required|numeric|between:-180,180"
+      }
+    },
+    "query": {},
+    "response": {
+      "user_id": 101,
+      "latitude": 35.6812,
+      "longitude": 139.7671
+    },
+    "notes": "201 on first creation, 200 on later updates. The server sets updated_at, including repeated identical positions. Client timestamps and user_id are ignored.",
+    "cases": [
+      {
+        "name": "latitude — missing",
+        "field": "latitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "latitude — null",
+        "field": "latitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — wrong type",
+        "field": "latitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — below minimum",
+        "field": "latitude",
+        "value": -91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — above maximum",
+        "field": "latitude",
+        "value": 91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — missing",
+        "field": "longitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "longitude — null",
+        "field": "longitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — wrong type",
+        "field": "longitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — below minimum",
+        "field": "longitude",
+        "value": -181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — above maximum",
+        "field": "longitude",
+        "value": 181.0,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "latitude": 35.6812,
+      "longitude": 139.7671
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "latitude — minimum accepted",
+        "field": "latitude",
+        "value": -90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — maximum accepted",
+        "field": "latitude",
+        "value": 90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — minimum accepted",
+        "field": "longitude",
+        "value": -180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — maximum accepted",
+        "field": "longitude",
+        "value": 180,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "delete-user-location",
+    "title": "Delete My Location",
+    "method": "DELETE",
+    "path": "me/location",
+    "role": "customer",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Removes only the authenticated user’s location. Repeating deletion still returns 204.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "following",
+    "title": "List My Followed Carts",
+    "method": "GET",
+    "path": "me/following",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Returns only active follows for the current user, with visible cart details. Hidden carts and disabled owners are excluded.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "my-updates",
+    "title": "List Updates from Followed Carts",
+    "method": "GET",
+    "path": "me/updates",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Returns activity from the current user’s followed visible carts, with related cart data. Includes existing activity even when the follow was created later.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "register-device",
+    "title": "Register Push Device",
+    "method": "POST",
+    "path": "me/devices",
+    "role": "customer",
+    "status": 201,
+    "fields": {
+      "token": {
+        "example": "test-fcm-device-token-not-for-real-delivery",
+        "rules": "required|string|max:4096"
+      },
+      "platform": {
+        "example": "android",
+        "rules": "required|in:android,ios,web"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 601,
+      "user_id": 101,
+      "platform": "android"
+    },
+    "notes": "201 for a new token; 200 when updating an existing token. Re-registering the same token does not create a second device. Registration transfers the token to the current user if previously registered by another account. Token and token_hash are hidden in responses. The example token is synthetic; keep PUSH_DRIVER=disabled for manual tests.",
+    "cases": [
+      {
+        "name": "token — missing",
+        "field": "token",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "token — null",
+        "field": "token",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "token — wrong type",
+        "field": "token",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "token — above maximum",
+        "field": "token",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "platform — missing",
+        "field": "platform",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "platform — null",
+        "field": "platform",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "platform — wrong type",
+        "field": "platform",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "platform — invalid choice",
+        "field": "platform",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "token": "test-fcm-device-token-not-for-real-delivery",
+      "platform": "android"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "token — maximum accepted",
+        "field": "token",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "platform — allowed android",
+        "field": "platform",
+        "value": "android",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "platform — allowed ios",
+        "field": "platform",
+        "value": "ios",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "platform — allowed web",
+        "field": "platform",
+        "value": "web",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "delete-device",
+    "title": "Remove Push Device",
+    "method": "DELETE",
+    "path": "me/devices/{device}",
+    "role": "customer",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Unknown device or a device owned by another user returns 404.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "notifications",
+    "title": "List My Notifications",
+    "method": "GET",
+    "path": "me/notifications",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Private inbox, newest first. It must never expose another user’s messages.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "read-notification",
+    "title": "Mark Notification Read",
+    "method": "PATCH",
+    "path": "me/notifications/{notification}/read",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {},
+    "response": {
+      "id": 701,
+      "user_id": 101,
+      "read_at": "<server UTC timestamp>"
+    },
+    "notes": "Unknown notification or another user’s notification returns 404. Repeating updates read_at to the current time.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "read-all-notifications",
+    "title": "Mark All My Notifications Read",
+    "method": "PATCH",
+    "path": "me/notifications/read-all",
+    "role": "customer",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Marks unread messages for the current user only. Already-read timestamps are preserved. Empty inbox also returns 204.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "submit-report",
+    "title": "Report a Cart or User",
+    "method": "POST",
+    "path": "reports",
+    "role": "customer",
+    "status": 201,
+    "fields": {
+      "target_type": {
+        "example": "cart",
+        "rules": "required|in:cart,user"
+      },
+      "target_id": {
+        "example": 401,
+        "rules": "required|integer"
+      },
+      "reason": {
+        "example": "wrongLocation",
+        "rules": "required|in:spam,fakeListing,wrongLocation,offensive,other"
+      },
+      "note": {
+        "example": "The cart is no longer at this location.",
+        "rules": "nullable|string|max:2000"
+      }
+    },
+    "query": {},
+    "response": {
+      "target_type": "cart",
+      "target_id": 401,
+      "reporter_id": 101
+    },
+    "notes": "target_id must exist in the table selected by target_type; unknown target returns 422. For a user report use target_type=user and target_id=102. Reporter identity and initial open status are server-owned. Creation may omit database-default status in the immediate response; the persisted report is open.",
+    "cases": [
+      {
+        "name": "target_type — missing",
+        "field": "target_type",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "target_type — null",
+        "field": "target_type",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "target_type — wrong type",
+        "field": "target_type",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "target_type — invalid choice",
+        "field": "target_type",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "target_id — missing",
+        "field": "target_id",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "target_id — null",
+        "field": "target_id",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "target_id — wrong type",
+        "field": "target_id",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "reason — missing",
+        "field": "reason",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "reason — null",
+        "field": "reason",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "reason — wrong type",
+        "field": "reason",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "reason — invalid choice",
+        "field": "reason",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "note — wrong type",
+        "field": "note",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "note — above maximum",
+        "field": "note",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "target_id — nonexistent target",
+        "field": "target_id",
+        "value": 999999,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "target_type": "cart",
+      "target_id": 401,
+      "reason": "wrongLocation",
+      "note": "The cart is no longer at this location."
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "target_type — allowed cart",
+        "field": "target_type",
+        "value": "cart",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "target_type — allowed user",
+        "field": "target_type",
+        "value": "user",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "reason — allowed spam",
+        "field": "reason",
+        "value": "spam",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "reason — allowed fakeListing",
+        "field": "reason",
+        "value": "fakeListing",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "reason — allowed wrongLocation",
+        "field": "reason",
+        "value": "wrongLocation",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "reason — allowed offensive",
+        "field": "reason",
+        "value": "offensive",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "reason — allowed other",
+        "field": "reason",
+        "value": "other",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "note — optional omitted",
+        "field": "note",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "note — nullable value",
+        "field": "note",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "note — maximum accepted",
+        "field": "note",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "follow-cart",
+    "title": "Follow Cart",
+    "method": "PUT",
+    "path": "carts/{cart}/follow",
+    "role": "customer",
+    "status": 200,
+    "fields": {},
+    "query": {},
+    "response": {
+      "user_id": 101,
+      "cart_id": 401,
+      "is_following": true
+    },
+    "notes": "201 when a follow record is first created, 200 for an existing record (the shared fixture already follows cart 401). Repeating does not duplicate the row. Hidden/unknown carts return 404.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "unfollow-cart",
+    "title": "Unfollow Cart",
+    "method": "DELETE",
+    "path": "carts/{cart}/follow",
+    "role": "customer",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Sets is_following=false and retains the row. Repeating, or unfollowing an existing cart with no prior follow, returns 204. Unknown cart returns 404 through route binding. A hidden existing cart can still be unfollowed.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "owner-carts",
+    "title": "List My Owned Carts",
+    "method": "GET",
+    "path": "owner/carts",
+    "role": "owner",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Includes pending and rejected carts owned by the authenticated account. Admin callers also see only their own carts on this path; use GET /admin/carts for all carts.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "create-cart",
+    "title": "Create Food Cart",
+    "method": "POST",
+    "path": "owner/carts",
+    "role": "owner",
+    "status": 201,
+    "fields": {
+      "name": {
+        "example": "Tokyo Taco Club",
+        "rules": "required|string|max:100"
+      },
+      "description": {
+        "example": "Fresh tacos near Tokyo station.",
+        "rules": "nullable|string|max:3000"
+      },
+      "cuisine": {
+        "example": "Mexican",
+        "rules": "nullable|string|max:100"
+      },
+      "status": {
+        "example": "open",
+        "rules": "sometimes|in:open,closed"
+      }
+    },
+    "query": {},
+    "response": {
+      "name": "Tokyo Taco Club",
+      "owner_id": 201,
+      "moderation_status": "pending",
+      "status": "open"
+    },
+    "notes": "owner_id comes from the token. moderation_status and is_featured cannot be set here. Minimum payload is name; status defaults to closed.",
+    "cases": [
+      {
+        "name": "name — missing",
+        "field": "name",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "name — null",
+        "field": "name",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — wrong type",
+        "field": "name",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — above maximum",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "description — wrong type",
+        "field": "description",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "description — above maximum",
+        "field": "description",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "cuisine — wrong type",
+        "field": "cuisine",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "cuisine — above maximum",
+        "field": "cuisine",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — null",
+        "field": "status",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — wrong type",
+        "field": "status",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — invalid choice",
+        "field": "status",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "name": "Tokyo Taco Club",
+      "description": "Fresh tacos near Tokyo station.",
+      "cuisine": "Mexican",
+      "status": "open"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "name — maximum accepted",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "description — optional omitted",
+        "field": "description",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "description — nullable value",
+        "field": "description",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "description — maximum accepted",
+        "field": "description",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — optional omitted",
+        "field": "cuisine",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — nullable value",
+        "field": "cuisine",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — maximum accepted",
+        "field": "cuisine",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — optional omitted",
+        "field": "status",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed open",
+        "field": "status",
+        "value": "open",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed closed",
+        "field": "status",
+        "value": "closed",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "update-cart",
+    "title": "Update Food Cart",
+    "method": "PATCH",
+    "path": "owner/carts/{cart}",
+    "role": "owner",
+    "status": 200,
+    "fields": {
+      "name": {
+        "example": "Tokyo Taco Club Updated",
+        "rules": "sometimes|string|max:100"
+      },
+      "description": {
+        "example": "Fresh tacos near Tokyo station.",
+        "rules": "nullable|string|max:3000"
+      },
+      "cuisine": {
+        "example": "Mexican",
+        "rules": "nullable|string|max:100"
+      },
+      "status": {
+        "example": "open",
+        "rules": "sometimes|in:open,closed"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 401,
+      "name": "Tokyo Taco Club Updated"
+    },
+    "notes": "All fields are optional. Nullable description/cuisine can be cleared with null. Another owner receives 403; unknown cart receives 404. Administrators can edit any cart.",
+    "cases": [
+      {
+        "name": "name — null",
+        "field": "name",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — wrong type",
+        "field": "name",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "name — above maximum",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "description — wrong type",
+        "field": "description",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "description — above maximum",
+        "field": "description",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "cuisine — wrong type",
+        "field": "cuisine",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "cuisine — above maximum",
+        "field": "cuisine",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — null",
+        "field": "status",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — wrong type",
+        "field": "status",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — invalid choice",
+        "field": "status",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "name": "Tokyo Taco Club Updated",
+      "description": "Fresh tacos near Tokyo station.",
+      "cuisine": "Mexican",
+      "status": "open"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "name — optional omitted",
+        "field": "name",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "name — maximum accepted",
+        "field": "name",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "description — optional omitted",
+        "field": "description",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "description — nullable value",
+        "field": "description",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "description — maximum accepted",
+        "field": "description",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — optional omitted",
+        "field": "cuisine",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — nullable value",
+        "field": "cuisine",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "cuisine — maximum accepted",
+        "field": "cuisine",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — optional omitted",
+        "field": "status",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed open",
+        "field": "status",
+        "value": "open",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed closed",
+        "field": "status",
+        "value": "closed",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "delete-cart",
+    "title": "Delete Food Cart",
+    "method": "DELETE",
+    "path": "owner/carts/{cart}",
+    "role": "owner",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Deletes the cart, related records, and photo files. Use disposable fixture data. Another owner receives 403. Repeating after deletion returns 404.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "set-cart-location",
+    "title": "Publish Cart Location",
+    "method": "PUT",
+    "path": "owner/carts/{cart}/location",
+    "role": "owner",
+    "status": 200,
+    "fields": {
+      "latitude": {
+        "example": 35.6812,
+        "rules": "required|numeric|between:-90,90"
+      },
+      "longitude": {
+        "example": 139.7671,
+        "rules": "required|numeric|between:-180,180"
+      },
+      "address": {
+        "example": "Tokyo station, Marunouchi exit",
+        "rules": "nullable|string|max:255"
+      }
+    },
+    "query": {},
+    "response": {
+      "cart_id": 401,
+      "latitude": 35.6812,
+      "longitude": 139.7671
+    },
+    "notes": "201 if no location exists, 200 when updating (fixture cart 401 already has one). Identical submissions refresh updated_at. address can be null. Another owner receives 403.",
+    "cases": [
+      {
+        "name": "latitude — missing",
+        "field": "latitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "latitude — null",
+        "field": "latitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — wrong type",
+        "field": "latitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — below minimum",
+        "field": "latitude",
+        "value": -91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — above maximum",
+        "field": "latitude",
+        "value": 91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — missing",
+        "field": "longitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "longitude — null",
+        "field": "longitude",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — wrong type",
+        "field": "longitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — below minimum",
+        "field": "longitude",
+        "value": -181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — above maximum",
+        "field": "longitude",
+        "value": 181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "address — wrong type",
+        "field": "address",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "address — above maximum",
+        "field": "address",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "latitude": 35.6812,
+      "longitude": 139.7671,
+      "address": "Tokyo station, Marunouchi exit"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "latitude — minimum accepted",
+        "field": "latitude",
+        "value": -90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — maximum accepted",
+        "field": "latitude",
+        "value": 90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — minimum accepted",
+        "field": "longitude",
+        "value": -180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — maximum accepted",
+        "field": "longitude",
+        "value": 180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "address — optional omitted",
+        "field": "address",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "address — nullable value",
+        "field": "address",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "address — maximum accepted",
+        "field": "address",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "publish-update",
+    "title": "Publish Cart Activity Update",
+    "method": "POST",
+    "path": "owner/carts/{cart}/updates",
+    "role": "owner",
+    "status": 201,
+    "fields": {
+      "title": {
+        "example": "Lunch is ready",
+        "rules": "required|string|max:150"
+      },
+      "body": {
+        "example": "Fresh tacos served until 14:00.",
+        "rules": "required|string|max:3000"
+      },
+      "type": {
+        "example": "announcement",
+        "rules": "sometimes|in:announcement,opened,closed,moved,scheduleChanged,photoAdded"
+      }
+    },
+    "query": {},
+    "response": {
+      "cart_id": 401,
+      "title": "Lunch is ready",
+      "type": "announcement"
+    },
+    "notes": "Pending or rejected cart returns 403, as does another owner. Omitted type persists as announcement. The scheduler later creates follower notifications; this endpoint does not synchronously send FCM.",
+    "cases": [
+      {
+        "name": "title — missing",
+        "field": "title",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "title — null",
+        "field": "title",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "title — wrong type",
+        "field": "title",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "title — above maximum",
+        "field": "title",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "body — missing",
+        "field": "body",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "body — null",
+        "field": "body",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "body — wrong type",
+        "field": "body",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "body — above maximum",
+        "field": "body",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "type — null",
+        "field": "type",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "type — wrong type",
+        "field": "type",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "type — invalid choice",
+        "field": "type",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "title": "Lunch is ready",
+      "body": "Fresh tacos served until 14:00.",
+      "type": "announcement"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "title — maximum accepted",
+        "field": "title",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "body — maximum accepted",
+        "field": "body",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — optional omitted",
+        "field": "type",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed announcement",
+        "field": "type",
+        "value": "announcement",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed opened",
+        "field": "type",
+        "value": "opened",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed closed",
+        "field": "type",
+        "value": "closed",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed moved",
+        "field": "type",
+        "value": "moved",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed scheduleChanged",
+        "field": "type",
+        "value": "scheduleChanged",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "type — allowed photoAdded",
+        "field": "type",
+        "value": "photoAdded",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "upsert-schedule",
+    "title": "Save Cart Schedule or One-off Stop",
+    "method": "PUT",
+    "path": "owner/carts/{cart}/schedules",
+    "role": "owner",
+    "status": 201,
+    "fields": {
+      "day_of_week": {
+        "example": 7,
+        "rules": "required|integer|between:1,7"
+      },
+      "opens_at": {
+        "example": "11:00",
+        "rules": "required|date_format:H:i"
+      },
+      "closes_at": {
+        "example": "22:00",
+        "rules": "required|date_format:H:i"
+      },
+      "timezone": {
+        "example": "Asia/Tokyo",
+        "rules": "required|timezone"
+      },
+      "address": {
+        "example": "Tokyo station plaza",
+        "rules": "nullable|string|max:255"
+      },
+      "specific_date": {
+        "example": "2026-10-04",
+        "rules": "nullable|date_format:Y-m-d"
+      },
+      "is_active": {
+        "example": true,
+        "rules": "sometimes|boolean"
+      },
+      "latitude": {
+        "example": 35.6812,
+        "rules": "nullable|required_with:longitude|numeric|between:-90,90"
+      },
+      "longitude": {
+        "example": 139.7671,
+        "rules": "nullable|required_with:latitude|numeric|between:-180,180"
+      }
+    },
+    "query": {},
+    "response": {
+      "cart_id": 401,
+      "day_of_week": 7,
+      "opens_at": "11:00",
+      "closes_at": "22:00",
+      "specific_date": "2026-10-04"
+    },
+    "notes": "201 for a new cart/weekday/date key, 200 for an existing key. Monday=1 through Sunday=7. Omit specific_date or send null for a weekly entry. Optional coordinates must be supplied together when non-null. Closing before opening is allowed for overnight hours; equal times are currently allowed. Date/weekday consistency is not currently validated.",
+    "cases": [
+      {
+        "name": "day_of_week — missing",
+        "field": "day_of_week",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "day_of_week — null",
+        "field": "day_of_week",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "day_of_week — wrong type",
+        "field": "day_of_week",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "day_of_week — below minimum",
+        "field": "day_of_week",
+        "value": 0.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "day_of_week — above maximum",
+        "field": "day_of_week",
+        "value": 8.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "opens_at — missing",
+        "field": "opens_at",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "opens_at — null",
+        "field": "opens_at",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "opens_at — wrong type",
+        "field": "opens_at",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "opens_at — invalid time",
+        "field": "opens_at",
+        "value": "25:70",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "closes_at — missing",
+        "field": "closes_at",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "closes_at — null",
+        "field": "closes_at",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "closes_at — wrong type",
+        "field": "closes_at",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "closes_at — invalid time",
+        "field": "closes_at",
+        "value": "25:70",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "timezone — missing",
+        "field": "timezone",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "timezone — null",
+        "field": "timezone",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "timezone — wrong type",
+        "field": "timezone",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "timezone — unknown timezone",
+        "field": "timezone",
+        "value": "Invalid/Zone",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "address — wrong type",
+        "field": "address",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "address — above maximum",
+        "field": "address",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "specific_date — wrong type",
+        "field": "specific_date",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "specific_date — invalid calendar date",
+        "field": "specific_date",
+        "value": "2026-02-30",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "is_active — null",
+        "field": "is_active",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "is_active — invalid boolean",
+        "field": "is_active",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — missing",
+        "field": "latitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "latitude — wrong type",
+        "field": "latitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — below minimum",
+        "field": "latitude",
+        "value": -91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "latitude — above maximum",
+        "field": "latitude",
+        "value": 91.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — missing",
+        "field": "longitude",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "longitude — wrong type",
+        "field": "longitude",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — below minimum",
+        "field": "longitude",
+        "value": -181.0,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "longitude — above maximum",
+        "field": "longitude",
+        "value": 181.0,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "day_of_week": 7,
+      "opens_at": "11:00",
+      "closes_at": "22:00",
+      "timezone": "Asia/Tokyo",
+      "address": "Tokyo station plaza",
+      "specific_date": "2026-10-04",
+      "is_active": true,
+      "latitude": 35.6812,
+      "longitude": 139.7671
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "day_of_week — minimum accepted",
+        "field": "day_of_week",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "day_of_week — maximum accepted",
+        "field": "day_of_week",
+        "value": 7,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "address — optional omitted",
+        "field": "address",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "address — nullable value",
+        "field": "address",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "address — maximum accepted",
+        "field": "address",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "specific_date — optional omitted",
+        "field": "specific_date",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "specific_date — nullable value",
+        "field": "specific_date",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — optional omitted",
+        "field": "is_active",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed true",
+        "field": "is_active",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed false",
+        "field": "is_active",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed 0",
+        "field": "is_active",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed 1",
+        "field": "is_active",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed \"0\"",
+        "field": "is_active",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed \"1\"",
+        "field": "is_active",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — minimum accepted",
+        "field": "latitude",
+        "value": -90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "latitude — maximum accepted",
+        "field": "latitude",
+        "value": 90,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — minimum accepted",
+        "field": "longitude",
+        "value": -180,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "longitude — maximum accepted",
+        "field": "longitude",
+        "value": 180,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "delete-schedule",
+    "title": "Delete Cart Schedule",
+    "method": "DELETE",
+    "path": "owner/carts/{cart}/schedules/{schedule}",
+    "role": "owner",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Another owner gets 403. A nonexistent schedule or a schedule belonging to a different cart gets 404.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "upload-photo",
+    "title": "Upload Cart Photo",
+    "method": "POST",
+    "path": "owner/carts/{cart}/photos",
+    "role": "owner",
+    "status": 201,
+    "fields": {
+      "photo": {
+        "example": "@doc/test/fixtures/cart.png",
+        "rules": "required|image|mimes:jpg,jpeg,png,webp|max:5120"
+      }
+    },
+    "query": {},
+    "response": {
+      "cart_id": 401,
+      "path": "carts/401/<generated>.png",
+      "url": "http://localhost:8000/storage/carts/401/<generated>.png"
+    },
+    "notes": "Use multipart/form-data, not JSON; let curl set the multipart boundary. Maximum file size is 5120 KB and maximum photos per cart is 10. Invalid content, SVG, or an eleventh photo returns 422. A proxy/PHP request-size limit can return 413 before Laravel validation. Another owner receives 403.",
+    "cases": [
+      {
+        "name": "photo — missing",
+        "field": "photo",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "photo — null",
+        "field": "photo",
+        "value": null,
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "photo": "@doc/test/fixtures/cart.png"
+    },
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "delete-photo",
+    "title": "Delete Cart Photo",
+    "method": "DELETE",
+    "path": "owner/carts/{cart}/photos/{photo}",
+    "role": "owner",
+    "status": 204,
+    "fields": {},
+    "query": {},
+    "response": null,
+    "notes": "Deletes the photo row and stored file. Another owner gets 403. Missing photo or photo on a different cart returns 404.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {},
+    "accepted_cases": []
+  },
+  {
+    "slug": "admin-users",
+    "title": "Admin — List Users",
+    "method": "GET",
+    "path": "admin/users",
+    "role": "admin",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "search": {
+        "example": "Tokyo",
+        "rules": "nullable|string|max:100"
+      },
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Search matches name, not email. Customer and owner tokens return 403. Passwords and remember tokens are hidden.",
+    "cases": [
+      {
+        "name": "search — wrong type",
+        "field": "search",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "search — above maximum",
+        "field": "search",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {},
+    "query_payload": {
+      "search": "Tokyo",
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "search — optional omitted",
+        "field": "search",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "search — nullable value",
+        "field": "search",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "search — maximum accepted",
+        "field": "search",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "admin-update-user",
+    "title": "Admin — Change User Role or Status",
+    "method": "PATCH",
+    "path": "admin/users/{user}",
+    "role": "admin",
+    "status": 200,
+    "fields": {
+      "is_active": {
+        "example": false,
+        "rules": "sometimes|boolean"
+      },
+      "role": {
+        "example": "owner",
+        "rules": "sometimes|in:customer,owner,admin"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 102,
+      "role": "owner",
+      "is_active": false
+    },
+    "notes": "All fields optional. Disabling revokes that user’s API tokens and hides their carts from public discovery. Disabling or demoting the current administrator returns 422. Unknown user returns 404.",
+    "cases": [
+      {
+        "name": "is_active — null",
+        "field": "is_active",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "is_active — invalid boolean",
+        "field": "is_active",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "role — null",
+        "field": "role",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "role — wrong type",
+        "field": "role",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "role — invalid choice",
+        "field": "role",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "is_active": false,
+      "role": "owner"
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "is_active — optional omitted",
+        "field": "is_active",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed true",
+        "field": "is_active",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed false",
+        "field": "is_active",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed 0",
+        "field": "is_active",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed 1",
+        "field": "is_active",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed \"0\"",
+        "field": "is_active",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_active — allowed \"1\"",
+        "field": "is_active",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "role — optional omitted",
+        "field": "role",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "role — allowed customer",
+        "field": "role",
+        "value": "customer",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "role — allowed owner",
+        "field": "role",
+        "value": "owner",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "role — allowed admin",
+        "field": "role",
+        "value": "admin",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "admin-carts",
+    "title": "Admin — List All Carts",
+    "method": "GET",
+    "path": "admin/carts",
+    "role": "admin",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Includes approved, pending, rejected, and disabled-owner carts. No search/status filter is implemented on this path.",
+    "cases": [],
+    "payload": {},
+    "query_payload": {
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "admin-update-cart",
+    "title": "Admin — Moderate or Feature Cart",
+    "method": "PATCH",
+    "path": "admin/carts/{cart}",
+    "role": "admin",
+    "status": 200,
+    "fields": {
+      "moderation_status": {
+        "example": "approved",
+        "rules": "sometimes|in:pending,approved,rejected"
+      },
+      "is_featured": {
+        "example": true,
+        "rules": "sometimes|boolean"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 401,
+      "moderation_status": "approved",
+      "is_featured": true
+    },
+    "notes": "All fields optional. Does not allow changing owner, name, or location. Unknown cart returns 404.",
+    "cases": [
+      {
+        "name": "moderation_status — null",
+        "field": "moderation_status",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "moderation_status — wrong type",
+        "field": "moderation_status",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "moderation_status — invalid choice",
+        "field": "moderation_status",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "is_featured — null",
+        "field": "is_featured",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "is_featured — invalid boolean",
+        "field": "is_featured",
+        "value": "true",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "moderation_status": "approved",
+      "is_featured": true
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "moderation_status — optional omitted",
+        "field": "moderation_status",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "moderation_status — allowed pending",
+        "field": "moderation_status",
+        "value": "pending",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "moderation_status — allowed approved",
+        "field": "moderation_status",
+        "value": "approved",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "moderation_status — allowed rejected",
+        "field": "moderation_status",
+        "value": "rejected",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — optional omitted",
+        "field": "is_featured",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed true",
+        "field": "is_featured",
+        "value": true,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed false",
+        "field": "is_featured",
+        "value": false,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed 0",
+        "field": "is_featured",
+        "value": 0,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed 1",
+        "field": "is_featured",
+        "value": 1,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed \"0\"",
+        "field": "is_featured",
+        "value": "0",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "is_featured — allowed \"1\"",
+        "field": "is_featured",
+        "value": "1",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "admin-reports",
+    "title": "Admin — List Reports",
+    "method": "GET",
+    "path": "admin/reports",
+    "role": "admin",
+    "status": 200,
+    "fields": {},
+    "query": {
+      "status": {
+        "example": "open",
+        "rules": "nullable|in:open,reviewing,resolved,dismissed"
+      },
+      "page": {
+        "example": 1,
+        "rules": "pagination"
+      }
+    },
+    "response": null,
+    "notes": "Omit status for all reports. Invalid status returns 422. No reporter or target filter is implemented.",
+    "cases": [
+      {
+        "name": "status — wrong type",
+        "field": "status",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — invalid choice",
+        "field": "status",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {},
+    "query_payload": {
+      "status": "open",
+      "page": 1
+    },
+    "accepted_cases": [
+      {
+        "name": "status — optional omitted",
+        "field": "status",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "status — nullable value",
+        "field": "status",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed open",
+        "field": "status",
+        "value": "open",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed reviewing",
+        "field": "status",
+        "value": "reviewing",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed resolved",
+        "field": "status",
+        "value": "resolved",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed dismissed",
+        "field": "status",
+        "value": "dismissed",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "page — optional omitted",
+        "field": "page",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "page — empty later page",
+        "field": "page",
+        "value": 999,
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  },
+  {
+    "slug": "admin-update-report",
+    "title": "Admin — Resolve or Review Report",
+    "method": "PATCH",
+    "path": "admin/reports/{report}",
+    "role": "admin",
+    "status": 200,
+    "fields": {
+      "status": {
+        "example": "resolved",
+        "rules": "required|in:open,reviewing,resolved,dismissed"
+      },
+      "resolution_note": {
+        "example": "Verified the location with the owner.",
+        "rules": "nullable|string|max:2000"
+      }
+    },
+    "query": {},
+    "response": {
+      "id": 801,
+      "status": "resolved",
+      "resolved_by": 301,
+      "resolution_note": "Verified the location with the owner."
+    },
+    "notes": "resolved/dismissed set resolved_at; open/reviewing clear it. resolved_by comes from the admin token, not the request. Unknown report returns 404.",
+    "cases": [
+      {
+        "name": "status — missing",
+        "field": "status",
+        "value": null,
+        "omit": true,
+        "status": 422
+      },
+      {
+        "name": "status — null",
+        "field": "status",
+        "value": null,
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — wrong type",
+        "field": "status",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "status — invalid choice",
+        "field": "status",
+        "value": "unsupported-value",
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "resolution_note — wrong type",
+        "field": "resolution_note",
+        "value": [
+          "unexpected"
+        ],
+        "omit": false,
+        "status": 422
+      },
+      {
+        "name": "resolution_note — above maximum",
+        "field": "resolution_note",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "status": 422
+      }
+    ],
+    "payload": {
+      "status": "resolved",
+      "resolution_note": "Verified the location with the owner."
+    },
+    "query_payload": {},
+    "accepted_cases": [
+      {
+        "name": "status — allowed open",
+        "field": "status",
+        "value": "open",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed reviewing",
+        "field": "status",
+        "value": "reviewing",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed resolved",
+        "field": "status",
+        "value": "resolved",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "status — allowed dismissed",
+        "field": "status",
+        "value": "dismissed",
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "resolution_note — optional omitted",
+        "field": "resolution_note",
+        "value": null,
+        "omit": true,
+        "accepted": true
+      },
+      {
+        "name": "resolution_note — nullable value",
+        "field": "resolution_note",
+        "value": null,
+        "omit": false,
+        "accepted": true
+      },
+      {
+        "name": "resolution_note — maximum accepted",
+        "field": "resolution_note",
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "omit": false,
+        "accepted": true
+      }
+    ]
+  }
+]

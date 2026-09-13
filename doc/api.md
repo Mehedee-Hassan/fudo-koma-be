@@ -1,5 +1,7 @@
 # API v1
 
+See [per-endpoint test cases and full-parameter examples](test/README.md) for runnable requests, sample data, and expected validation results.
+
 Base URL: `/api/v1`. Use `Accept: application/json`. JSON writes use `Content-Type: application/json`; photo uploads use multipart form data. Authenticated endpoints require `Authorization: Bearer <token>`.
 
 Lists return Laravel pagination: `data`, `current_page`, `last_page`, `per_page`, `total`, `next_page_url`. Use `?page=2` to continue. IDs are numeric on the wire; convert to strings for existing Flutter models. Timestamps are UTC ISO-8601; fields use snake_case. Singular endpoints return the object directly. Creation returns 201; updates generally return 200, upserts can return 201 on first creation, and deletion/logout returns 204. Validation errors return 422 with `message` and `errors`; unauthenticated 401, unauthorized 403, unavailable records 404, rate limits 429.
